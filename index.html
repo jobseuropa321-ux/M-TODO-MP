@@ -885,6 +885,12 @@
   chapters.forEach(function(c){io.observe(c);});
   chapters[0].classList.add('in');dots[0].classList.add('active');
 
+  // Capitulos mas altos que la pantalla NO deben ser punto de snap (si no, el scroll se "atasca" en su inicio).
+  function tuneSnap(){var vh=scroller.clientHeight;chapters.forEach(function(ch){ch.style.scrollSnapAlign=(ch.offsetHeight>vh+4)?'none':'start';});}
+  tuneSnap();
+  window.addEventListener('load',tuneSnap);
+  window.addEventListener('resize',tuneSnap);
+
   function go(n){n=Math.max(0,Math.min(total-1,n));chapters[n].scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});}
 
   document.addEventListener('keydown',function(e){
