@@ -869,20 +869,25 @@
     requestAnimationFrame(step);
   }
 
-  // REVELADO elemento por elemento — robusto en scroll vertical/móvil. Nunca esconde contenido.
+  // Animaciones por capítulo: al entrar en vista se añade .in -> dispara reveals, barras, trazos SVG,
+  // ticks, "pop" de precio, olas y contadores. Se activa con CUALQUIER intersección (también capítulos
+  // altos como la galería, que antes nunca llegaban al 40% y se quedaban sin animar ni mostrarse).
   if('IntersectionObserver' in window && !reduce){
-    var revEls=Array.prototype.slice.call(scroller.querySelectorAll('.reveal'));
-    var ro=new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('show'); ro.unobserve(e.target); } });
-    },{root:scroller,rootMargin:'0px 0px -8% 0px',threshold:0.01});
-    revEls.forEach(function(el){ ro.observe(el); });
-    var numEls=Array.prototype.slice.call(scroller.querySelectorAll('[data-count]'));
-    var no=new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if(e.isIntersecting){ countUp(e.target); no.unobserve(e.target); } });
-    },{root:scroller,threshold:0.2});
-    numEls.forEach(function(el){ no.observe(el); });
+    var cio=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('in');
+          if(!e.target._counted){
+            e.target._counted=true;
+            Array.prototype.forEach.call(e.target.querySelectorAll('[data-count]'),function(n){countUp(n);});
+          }
+          cio.unobserve(e.target);
+        }
+      });
+    },{root:scroller,rootMargin:'0px 0px -22% 0px',threshold:0});
+    chapters.forEach(function(c){ cio.observe(c); });
   } else {
-    Array.prototype.forEach.call(scroller.querySelectorAll('.reveal'),function(el){ el.classList.add('show'); });
+    chapters.forEach(function(c){ c.classList.add('in'); });
     Array.prototype.forEach.call(scroller.querySelectorAll('[data-count]'),function(el){ countUp(el); });
   }
 
